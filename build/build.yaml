@@ -1,0 +1,74 @@
+clear_build_path: true
+build_in: img
+next:
+  - build: docker
+    build_in: docker
+    config:
+      base_image: eons/base.img
+      combine:
+      - kasmweb/vs-code:1.16.1
+      image_name: eons/code.workspace.img
+      image_os: debian
+      env:
+        TZ: Etc/UTC
+        KASM_USER: kasm_user
+        KASM_VNC_PORT: '6901'
+        KASM_RESOLUTION: 1920x1080
+        LANG: en_US.UTF-8
+        LANGUAGE: en_US.UTF-8
+        AUDIO_PORT: '4901'
+        DEBIAN_FRONTEND: 'noninteractive'
+        DISPLAY: ':1'
+        DISTRO: 'ubuntu'
+        GOMP_SPINCOUNT: '0'
+        HOME: '/home/kasm-user'
+        INST_SCRIPTS: '/dockerstartup/install'
+        KASMVNC_AUTO_RECOVER: 'true'
+        KASM_VNC_PATH: '/usr/share/kasmvnc'
+        LC_ALL: 'en_US.UTF-8'
+        LD_LIBRARY_PATH: '/opt/libjpeg-turbo/lib64/:/usr/local/lib/'
+        LD_LIBRARY_PATH: '/usr/lib/x86_64-linux-gnu:/usr/lib/i386-linux-gnu:/usr/local/nvidia/lib:/usr/local/nvidia/lib64'
+        MAX_FRAME_RATE: '24'
+        NO_VNC_PORT: '6901'
+        NVIDIA_DRIVER_CAPABILITIES: 'graphics,compat32,utility'
+        OMP_WAIT_POLICY: 'PASSIVE'
+        PULSE_RUNTIME_PATH: '/var/run/pulse'
+        SDL_GAMECONTROLLERCONFIG: '030000005e040000be02000014010000,XInput Controller,platform:Linux,a:b0,b:b1,x:b2,y:b3,back:b8,guide:b16,start:b9,leftstick:b10,rightstick:b11,leftshoulder:b4,rightshoulder:b5,dpup:b12,dpdown:b13,dpleft:b14,dpright:b15,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b6,righttrigger:b7'
+        SHELL: '/bin/bash'
+        START_PULSEAUDIO: '1'
+        STARTUPDIR: '/dockerstartup'
+        START_XFCE4: '1'
+        TERM: 'xterm'
+        VNC_COL_DEPTH: '24'
+        VNCOPTIONS: '-PreferBandwidth -DynamicQualityMin=4 -DynamicQualityMax=7 -DLP_ClipDelay=0'
+        VNC_PORT: '5901 '
+        VNC_PW: 'vncpassword'
+        VNC_RESOLUTION: '1920x1080'
+        VNC_VIEW_ONLY_PW: 'vncviewonlypassword'
+      install:
+      - curl
+      - git
+      - jq
+      # VERY OUTDATED
+      # - nodejs
+      # - npm
+      launch:
+        clone_and_configure: /usr/local/bin/clone_and_configure.sh
+        kasm: /usr/local/bin/kasm.sh
+      also:
+      - "ARG DISTRO=ubuntu"
+      - "ARG START_PULSEAUDIO=1"
+      - "ARG START_XFCE4=1"
+      - "EXPOSE map[4901/tcp:{} 5901/tcp:{} 6901/tcp:{}]"
+      - "USER 1000"
+      - "RUN pip install elderlang"
+      - "RUN curl -fsSL https://deb.nodesource.com/setup_23.x -o nodesource_setup.sh && bash nodesource_setup.sh && apt-get install -y nodejs"
+      tags:
+        - latest
+      next:
+        - run_when_any:
+            - release
+          build: docker_publish
+          build_in: ./
+          config:
+            image_name: eons/code.workspace.img
